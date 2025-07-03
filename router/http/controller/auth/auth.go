@@ -43,8 +43,11 @@ func Refresh(c *gin.Context) {
 	var access types.AccessToken
 	var refresh types.RefreshToken
 	var err error
-	refresh = c.GetHeader("Refresh-Token")
-	access, refresh, err = authService.Refresh(refresh)
+	access = types.AccessToken(c.GetHeader("Access-Token"))
+	refresh = types.RefreshToken(c.GetHeader("Refresh-Token"))
+	userAgent := c.GetHeader("User-Agent")
+	ipAddress := c.ClientIP()
+	access, refresh, err = authService.Refresh(access, refresh, userAgent, ipAddress)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
