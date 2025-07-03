@@ -12,18 +12,11 @@ import (
 	"silver-train/types"
 )
 
-type AccessTokenClaims struct {
-	GUID string `json:"guid"`
-	jwt.StandardClaims
-}
-
 func GenerateAccessToken(guid string) (types.AccessToken, error) {
 	// TODO: use SHA512 algo for sign
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, AccessTokenClaims{
-		GUID: guid,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(constant.AccessTokenExpire).Unix(),
-		},
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Subject: guid,
+		ExpiresAt: time.Now().Add(constant.AccessTokenExpire).Unix(),
 	})
 	s, err := token.SignedString([]byte("TODO: make sugar string"))
 	return types.AccessToken(s), err
