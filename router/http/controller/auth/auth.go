@@ -40,7 +40,19 @@ func Get(c *gin.Context) {
 }
 
 func Refresh(c *gin.Context) {
-	c.JSON(http.StatusOK, nil)
+	var access types.AccessToken
+	var refresh types.RefreshToken
+	var err error
+	refresh = c.GetHeader("Refresh-Token")
+	access, refresh, err = authService.Refresh(refresh)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, TokenResponse{
+		Access: access,
+		Refresh: refresh,
+	})
 }
 
 func Current(c *gin.Context) {
