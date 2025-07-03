@@ -26,7 +26,9 @@ func Get(c *gin.Context) {
 		return
 	}
 	guid := c.Query("guid")
-	access, refresh, err := authService.GetTokens(guid)
+	userAgent := c.GetHeader("User-Agent")
+	ipAddress := c.ClientIP()
+	access, refresh, err := authService.GetTokens(guid, userAgent, ipAddress)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

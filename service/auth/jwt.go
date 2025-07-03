@@ -11,7 +11,7 @@ import (
 )
 
 
-func GetTokens(guid string) (types.AccessToken, types.RefreshToken, error) {
+func GetTokens(guid, userAgent, ipAddress string) (types.AccessToken, types.RefreshToken, error) {
 	access, err := util.GenerateAccessToken(guid)
 	if err != nil {
 		return "", "", err
@@ -20,12 +20,11 @@ func GetTokens(guid string) (types.AccessToken, types.RefreshToken, error) {
 	if err != nil {
 		return "", "", err
 	}
-	_ = refreshDB
 	res := db.DB.Create(&authModel.RefreshToken{
-		UserGUID:  guid,
+		UserID:  guid,
 		TokenHash: string(refreshDB),
-		// UserAgent: userAgent, // TODO
-		// IPAddress: ipAddress, // TODO
+		UserAgent: userAgent,
+		IPAddress: ipAddress,
 		ExpiresAt: time.Now().Add(constant.RefreshTokenExpire),
 		Revoked:   false,
 	})
