@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"silver-train/service/auth"
+	"silver-train/service/user"
 	"silver-train/types"
 )
 
@@ -59,7 +60,13 @@ func Refresh(c *gin.Context) {
 }
 
 func Current(c *gin.Context) {
-	c.JSON(http.StatusOK, nil)
+	access := types.AccessToken(c.GetHeader("Access-Token"))
+	userId, err := userService.Me(access)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"guid": userId})
 }
 
 func Revoke(c *gin.Context) {
