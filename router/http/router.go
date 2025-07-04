@@ -13,12 +13,12 @@ func Run() {
 	{
 		jwtRouterGroup.GET("/get", authController.Get)
 		jwtRouterGroup.PUT("/refresh", authController.Refresh)
-		jwtRouterGroup.GET("/revoke", authController.Revoke)
 	}
 
 	userRouterGroup := r.Group("user")
 	{
 		userRouterGroup.GET("/me", authController.Current)
+		userRouterGroup.GET("/logout", authController.Revoke)
 	}
 
 	r.Run()
