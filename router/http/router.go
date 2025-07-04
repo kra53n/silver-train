@@ -8,12 +8,18 @@ import (
 
 func Run() {
 	r:= gin.Default()
+
 	jwtRouterGroup := r.Group("jwt")
 	{
 		jwtRouterGroup.GET("/get", authController.Get)
 		jwtRouterGroup.PUT("/refresh", authController.Refresh)
-		jwtRouterGroup.GET("/current", authController.Current)
 		jwtRouterGroup.GET("/revoke", authController.Revoke)
 	}
+
+	userRouterGroup := r.Group("user")
+	{
+		userRouterGroup.GET("/me", authController.Current)
+	}
+
 	r.Run()
 }
