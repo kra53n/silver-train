@@ -69,3 +69,12 @@ func Refresh(access types.AccessToken, refresh types.RefreshToken, userAgent str
 	}
 	return types.AccessToken(""), types.RefreshToken(""), fmt.Errorf("something went wrong")
 }
+
+func RevokeAll(userId string) error {
+	tokenModels := []authModel.RefreshToken{}
+	db.DB.Where("user_id = ? and revoked = 0", userId).Find(&tokenModels)
+	for _, tokenModel := range tokenModels {
+		db.DB.Model(&tokenModel).Update("revoked", true)
+	}
+	return nil
+}

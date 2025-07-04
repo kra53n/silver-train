@@ -70,5 +70,11 @@ func Current(c *gin.Context) {
 }
 
 func Revoke(c *gin.Context) {
-	c.JSON(http.StatusOK, nil)
+	access := types.AccessToken(c.GetHeader("Access-Token"))
+	err := userService.Logout(access)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
