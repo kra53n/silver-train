@@ -18,6 +18,19 @@ type TokenResponse struct {
 	Refresh types.RefreshToken `json:"refresh"`
 }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+// @Summary Get access and refresh tokens
+// @Description Get access and refresh tokens
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param guid query string true "User GUID"
+// @Success 200 {object} TokenResponse
+// @Failure 400 {object} ErrorResponse
+// @Router /jwt/get [get]
 func Get(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
