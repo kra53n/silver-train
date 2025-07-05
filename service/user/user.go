@@ -7,7 +7,7 @@ import (
 )
 
 func Me(access types.AccessToken) (string, error) {
-	claims, err := util.ParseAccessToken(access)
+	claims, err := authService.CheckAccessToken(access)
 	if err != nil {
 		return "", err
 	}

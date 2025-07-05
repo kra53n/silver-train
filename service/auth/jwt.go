@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	jwt "github.com/dgrijalva/jwt-go"
 	
 	"silver-train/constant"
 	"silver-train/util"
@@ -14,18 +15,19 @@ import (
 )
 
 
-func GetTokens(guid, userAgent, ipAddress string) (types.AccessToken, types.RefreshToken, error) {
-	access, err := util.GenerateAccessToken(guid)
+func GetTokens(userId, userAgent, ipAddress string) (types.AccessToken, types.RefreshToken, error) {
+	access, accessId, err := util.GenerateAccessToken(userId)
 	if err != nil {
 		return "", "", err
 	}
-	refresh, refreshDB, err := util.GenerateRefreshToken(guid)
+	refresh, refreshDB, err := util.GenerateRefreshToken(userId)
 	if err != nil {
 		return "", "", err
 	}
 	res := db.DB.Create(&authModel.RefreshToken{
-		UserID:  guid,
+		UserID: userId,
 		TokenHash: string(refreshDB),
+		TokenAccessId: accessId.String(),
 		UserAgent: userAgent,
 		IPAddress: ipAddress,
 		ExpiresAt: time.Now().Add(constant.RefreshTokenExpire),
@@ -43,6 +45,7 @@ func Refresh(access types.AccessToken, refresh types.RefreshToken, userAgent str
 		return types.AccessToken(""), types.RefreshToken(""), err
 	}
 	userId := claims["sub"].(string)
+	accessId := claims["jti"].(string)
 	tokenModels := []authModel.RefreshToken{}
 	db.DB.Where("user_id = ? and revoked = 0", userId).Find(&tokenModels)
 
@@ -54,8 +57,11 @@ func Refresh(access types.AccessToken, refresh types.RefreshToken, userAgent str
 		if err != nil {
 			continue
 		}
+		if accessId != tokenModel.TokenAccessId {
+			continue
+		}
 		if userAgent == tokenModel.UserAgent {
-			if ipAddress == tokenModel.IPAddress {
+			if ipAddress != tokenModel.IPAddress {
 				defer func () {
 					go util.SendMsgAtWebHook("the user ip address has been change")
 				}()
@@ -77,4 +83,19 @@ func RevokeAll(userId string) error {
 		db.DB.Model(&tokenModel).Update("revoked", true)
 	}
 	return nil
+}
+
+func CheckAccessToken(access types.AccessToken) (jwt.MapClaims, error) {
+	claims, err := util.ParseAccessToken(access)
+	if err != nil {
+		return jwt.MapClaims{}, err
+	}
+	userId := claims["sub"].(string)
+	tokenAccessId := claims["jti"].(string)
+	tokenModel := authModel.RefreshToken{}
+	res := db.DB.Where("user_id = ? and revoked = 0 and token_access_id = ?", userId, tokenAccessId).First(&tokenModel)
+	if res.Error != nil {
+		return jwt.MapClaims{}, res.Error
+	}
+	return claims, nil
 }

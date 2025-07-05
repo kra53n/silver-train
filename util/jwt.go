@@ -5,8 +5,9 @@ import (
 	"time"
 	"math/rand"
 	"encoding/base64"
-	"golang.org/x/crypto/bcrypt"
 
+	"golang.org/x/crypto/bcrypt"
+	"github.com/google/uuid"
 	jwt "github.com/dgrijalva/jwt-go"
 
 	"silver-train/constant"
@@ -15,14 +16,16 @@ import (
 
 const signString string = "TODO: make sugar string"
 
-func GenerateAccessToken(guid string) (types.AccessToken, error) {
+func GenerateAccessToken(guid string) (types.AccessToken, uuid.UUID, error) {
 	// TODO: use SHA512 algo for sign
+	id := uuid.New()
 	token := jwt.NewWithClaims(constant.SigningMethod, jwt.StandardClaims{
+		Id: id.String(),
 		Subject: guid,
 		ExpiresAt: time.Now().Add(constant.AccessTokenExpire).Unix(),
 	})
 	s, err := token.SignedString([]byte(signString))
-	return types.AccessToken(s), err
+	return types.AccessToken(s), id, err
 }
 
 func GenerateRefreshToken(guid string) (types.RefreshToken, types.RefreshTokenDB, error) {
