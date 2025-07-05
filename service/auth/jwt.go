@@ -44,6 +44,7 @@ func Refresh(access types.AccessToken, refresh types.RefreshToken, userAgent str
 		return types.AccessToken(""), types.RefreshToken(""), err
 	}
 	userId := claims["sub"].(string)
+	accessId := claims["jti"].(string)
 	tokenModels := []authModel.RefreshToken{}
 	db.DB.Where("user_id = ? and revoked = 0", userId).Find(&tokenModels)
 
@@ -55,8 +56,11 @@ func Refresh(access types.AccessToken, refresh types.RefreshToken, userAgent str
 		if err != nil {
 			continue
 		}
+		if accessId != tokenModel.TokenAccessId {
+			continue
+		}
 		if userAgent == tokenModel.UserAgent {
-			if ipAddress == tokenModel.IPAddress {
+			if ipAddress != tokenModel.IPAddress {
 				defer func () {
 					go util.SendMsgAtWebHook("the user ip address has been change")
 				}()
