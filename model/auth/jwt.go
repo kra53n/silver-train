@@ -15,6 +15,7 @@ type RefreshToken struct {
 	// ID        string `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"` // for postgre
 	UserID  string `gorm:"size:36;index"`
 	TokenHash string `gorm:"type:text"`
+	TokenAccessId string `gorm:"size:36;index"`
 	UserAgent string `gorm:"size:255"`
 	IPAddress string `gorm:"size:45"`
 	ExpiresAt time.Time

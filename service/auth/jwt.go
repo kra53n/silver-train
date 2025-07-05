@@ -14,18 +14,19 @@ import (
 )
 
 
-func GetTokens(guid, userAgent, ipAddress string) (types.AccessToken, types.RefreshToken, error) {
-	access, err := util.GenerateAccessToken(guid)
+func GetTokens(userId, userAgent, ipAddress string) (types.AccessToken, types.RefreshToken, error) {
+	access, accessId, err := util.GenerateAccessToken(userId)
 	if err != nil {
 		return "", "", err
 	}
-	refresh, refreshDB, err := util.GenerateRefreshToken(guid)
+	refresh, refreshDB, err := util.GenerateRefreshToken(userId)
 	if err != nil {
 		return "", "", err
 	}
 	res := db.DB.Create(&authModel.RefreshToken{
-		UserID:  guid,
+		UserID: userId,
 		TokenHash: string(refreshDB),
+		TokenAccessId: accessId.String(),
 		UserAgent: userAgent,
 		IPAddress: ipAddress,
 		ExpiresAt: time.Now().Add(constant.RefreshTokenExpire),
