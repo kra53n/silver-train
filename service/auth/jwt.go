@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	jwt "github.com/dgrijalva/jwt-go"
 	
 	"silver-train/constant"
 	"silver-train/util"
@@ -82,4 +83,19 @@ func RevokeAll(userId string) error {
 		db.DB.Model(&tokenModel).Update("revoked", true)
 	}
 	return nil
+}
+
+func CheckAccessToken(access types.AccessToken) (jwt.MapClaims, error) {
+	claims, err := util.ParseAccessToken(access)
+	if err != nil {
+		return jwt.MapClaims{}, err
+	}
+	userId := claims["sub"].(string)
+	tokenAccessId := claims["jti"].(string)
+	tokenModel := authModel.RefreshToken{}
+	res := db.DB.Where("user_id = ? and revoked = 0 and token_access_id = ?", userId, tokenAccessId).First(&tokenModel)
+	if res.Error != nil {
+		return jwt.MapClaims{}, res.Error
+	}
+	return claims, nil
 }
