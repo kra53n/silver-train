@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"silver-train/router/http/controller/auth"
+	"silver-train/router/http/controller/user"
 )
 
 func Run() {
@@ -17,8 +18,8 @@ func Run() {
 
 	userRouterGroup := r.Group("user")
 	{
-		userRouterGroup.GET("/me", authController.Current)
-		userRouterGroup.GET("/logout", authController.Revoke)
+		userRouterGroup.GET("/me", userController.Me)
+		userRouterGroup.GET("/logout", userController.Logout)
 	}
 
 	r.Run()
