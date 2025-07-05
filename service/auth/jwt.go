@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	jwt "github.com/dgrijalva/jwt-go"
 	
-	"silver-train/constant"
+	"silver-train/vars"
 	"silver-train/util"
 	"silver-train/types"
 	"silver-train/db"
@@ -30,7 +30,7 @@ func GetTokens(userId, userAgent, ipAddress string) (types.AccessToken, types.Re
 		TokenAccessId: accessId.String(),
 		UserAgent: userAgent,
 		IPAddress: ipAddress,
-		ExpiresAt: time.Now().Add(constant.RefreshTokenExpire),
+		ExpiresAt: time.Now().Add(vars.RefreshTokenExpire),
 		Revoked:   false,
 	})
 	if res.Error != nil {

@@ -6,6 +6,8 @@ import (
 	"time"
 	"net/http"
 	"encoding/json"
+
+	"silver-train/vars"
 )
 
 func SendMsg(webhookURL string, msg string) error {
@@ -30,8 +32,7 @@ func SendMsg(webhookURL string, msg string) error {
 }
 
 func SendMsgAtWebHook(msg string) {
-	// TODO: check webhook value from envs
-	if err := SendMsg("http://127.0.0.1:2020", msg); err != nil {
+	if err := SendMsg(vars.MsgWebhook(), msg); err != nil {
 		fmt.Println("[ERROR]  occured while trying to send msg. Err message:", err)
 	}
 }

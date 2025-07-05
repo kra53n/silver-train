@@ -10,21 +10,18 @@ import (
 	"github.com/google/uuid"
 	jwt "github.com/dgrijalva/jwt-go"
 
-	"silver-train/constant"
+	"silver-train/vars"
 	"silver-train/types"
 )
 
-const signString string = "TODO: make sugar string"
-
 func GenerateAccessToken(guid string) (types.AccessToken, uuid.UUID, error) {
-	// TODO: use SHA512 algo for sign
 	id := uuid.New()
-	token := jwt.NewWithClaims(constant.SigningMethod, jwt.StandardClaims{
+	token := jwt.NewWithClaims(vars.SigningMethod, jwt.StandardClaims{
 		Id: id.String(),
 		Subject: guid,
-		ExpiresAt: time.Now().Add(constant.AccessTokenExpire).Unix(),
+		ExpiresAt: time.Now().Add(vars.AccessTokenExpire).Unix(),
 	})
-	s, err := token.SignedString([]byte(signString))
+	s, err := token.SignedString([]byte(vars.JwtSecret()))
 	return types.AccessToken(s), id, err
 }
 
@@ -43,10 +40,10 @@ func GenerateRefreshToken(guid string) (types.RefreshToken, types.RefreshTokenDB
 
 func ParseAccessToken(access types.AccessToken) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(string(access), func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != constant.SigningMethod.Alg() {
+		if token.Method.Alg() != vars.SigningMethod.Alg() {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return []byte(signString), nil
+		return []byte(vars.JwtSecret()), nil
 	})
 	if err != nil {
 		return nil, err
